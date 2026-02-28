@@ -43,10 +43,16 @@ INDICATORS = ["Bollinger Bands", "MACD", "RSI"]
 def build_figure(asset, selected_indicators, start_date, end_date,
                  bb_n, bb_k, macd_fast, macd_slow, macd_signal,
                  rsi_periods, rsi_upper, rsi_lower):
+    import requests
+    session = requests.Session()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    })
+    
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         df = yf.download(asset, start=start_date, end=end_date,
-                         progress=False, auto_adjust=True)
+                         progress=False, auto_adjust=True, session=session)
 
     if df.empty:
         return {}
