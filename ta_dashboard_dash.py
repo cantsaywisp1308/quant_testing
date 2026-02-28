@@ -1,6 +1,6 @@
 import warnings
 import pandas as pd
-import yfinance as yf
+import pandas_datareader.data as web
 import cufflinks as cf
 import cufflinks.colors as _cf_colors
 import cufflinks.plotlytools as _cf_pt
@@ -36,30 +36,23 @@ cf.go_offline()
 _py_offline.__PLOTLY_OFFLINE_INITIALIZED = True
 
 # ── Constants ────────────────────────────────────────────────────────────────
-STOCKS     = ["MSFT", "GOOGL", "TSLA", "AAPL", "FB"]
+STOCKS     = ["MSFT", "GOOGL", "TSLA", "AAPL", "META"]
 INDICATORS = ["Bollinger Bands", "MACD", "RSI"]
 
 # ── Chart builder ────────────────────────────────────────────────────────────
 def build_figure(asset, selected_indicators, start_date, end_date,
                  bb_n, bb_k, macd_fast, macd_slow, macd_signal,
                  rsi_periods, rsi_upper, rsi_lower):
-    import requests
-    session = requests.Session()
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    })
-    
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        df = yf.download(asset, start=start_date, end=end_date,
-                         progress=False, auto_adjust=True, session=session)
+        try:
+            df = web.DataReader(asset, 'stooq', start_date, end_date)
+            df.sort_index(inplace=True)
+        except Exception:
+            return {}
 
-    if df.empty:
+    if df is None or df.empty:
         return {}
-
-    # Flatten MultiIndex columns (newer yfinance versions)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
 
     qf = cf.QuantFig(df, title=f'TA Dashboard — {asset}',
                      legend='right', name=asset)
