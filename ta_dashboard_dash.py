@@ -55,8 +55,8 @@ def build_figure(asset, selected_indicators, start_date, end_date,
                 # Flatten MultiIndex columns (newer yfinance versions)
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.get_level_values(0)
-        except Exception:
-            pass
+        except Exception as e:
+            print("YFINANCE ERROR:", e)
 
         # Attempt 2: Fallback to stooq via direct CSV fetch if yfinance fails (happens on Render due to IP blocks)
         if df is None or df.empty:
@@ -73,7 +73,8 @@ def build_figure(asset, selected_indicators, start_date, end_date,
                     df = stooq_df
                 else:
                     return {}
-            except Exception:
+            except Exception as e:
+                print("STOOQ ERROR:", e)
                 return {}
 
     if df is None or df.empty:
@@ -275,8 +276,7 @@ def update_chart(stock, indicators, start_date, end_date,
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import threading, webbrowser
-
     port = int(os.environ.get("PORT", 8050))
     print("\n🚀  TA Dashboard running at: http://127.0.0.1:8050\n")
-    threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
+    # threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
     app.run(host="0.0.0.0", port=8050)
