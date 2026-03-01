@@ -1,7 +1,6 @@
 import warnings
 import pandas as pd
 import yfinance as yf
-import pandas_datareader.data as web
 import cufflinks as cf
 import cufflinks.colors as _cf_colors
 import cufflinks.plotlytools as _cf_pt
@@ -58,11 +57,21 @@ def build_figure(asset, selected_indicators, start_date, end_date,
         except Exception:
             pass
 
-        # Attempt 2: Fallback to stooq if yfinance fails (happens on Render due to IP blocks)
+        # Attempt 2: Fallback to stooq via direct CSV fetch if yfinance fails (happens on Render due to IP blocks)
         if df is None or df.empty:
             try:
-                df = web.DataReader(asset, 'stooq', start_date, end_date)
-                df.sort_index(inplace=True)
+                # Stooq format: d1 and d2 are YYYYMMDD
+                d1 = start_date.replace('-', '')
+                d2 = end_date.replace('-', '')
+                url = f"https://stooq.com/q/d/l/?s={asset}.US&d1={d1}&d2={d2}&i=d"
+                stooq_df = pd.read_csv(url)
+                if not stooq_df.empty and 'Date' in stooq_df.columns:
+                    stooq_df['Date'] = pd.to_datetime(stooq_df['Date'])
+                    stooq_df.set_index('Date', inplace=True)
+                    stooq_df.sort_index(inplace=True)
+                    df = stooq_df
+                else:
+                    return {}
             except Exception:
                 return {}
 
