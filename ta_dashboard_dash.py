@@ -95,7 +95,8 @@ def build_figure(asset, selected_indicators, start_date, end_date,
                    rsi_upper=float(rsi_upper),
                    rsi_lower=float(rsi_lower),
                    showbands=True)
-
+    print("DF HEAD:", df.head())
+    print("DF EMPTY:", df.empty)
     return qf.iplot(asFigure=True)
 
 # ── App layout ───────────────────────────────────────────────────────────────
