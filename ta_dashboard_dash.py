@@ -7,6 +7,7 @@ import cufflinks.plotlytools as _cf_pt
 import cufflinks.tools as _cf_tools
 import plotly.offline as _py_offline
 from dash import Dash, dcc, html, Input, Output, State
+import os
 
 # ── Cufflinks compatibility patches ─────────────────────────────────────────
 # Fix: newer numpy formats np.float64 as 'np.float64(x)' in strings,
@@ -63,7 +64,7 @@ def build_figure(asset, selected_indicators, start_date, end_date,
                 # Stooq format: d1 and d2 are YYYYMMDD
                 d1 = start_date.replace('-', '')
                 d2 = end_date.replace('-', '')
-                url = f"https://stooq.com/q/d/l/?s={asset}.US&d1={d1}&d2={d2}&i=d"
+                url = f"https://stooq.com/q/d/l/?s={asset.lower()}.us&d1={d1}&d2={d2}&i=d"
                 stooq_df = pd.read_csv(url)
                 if not stooq_df.empty and 'Date' in stooq_df.columns:
                     stooq_df['Date'] = pd.to_datetime(stooq_df['Date'])
@@ -273,6 +274,8 @@ def update_chart(stock, indicators, start_date, end_date,
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import threading, webbrowser
+
+    port = int(os.environ.get("PORT", 8050))
     print("\n🚀  TA Dashboard running at: http://127.0.0.1:8050\n")
     threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
-    app.run(debug=False)
+    app.run(host="0.0.0.0", port=8050)
