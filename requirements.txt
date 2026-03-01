@@ -1,6 +1,7 @@
 dash
 pandas
 pandas-datareader
+yfinance
 cufflinks
 gunicorn
 werkzeug
