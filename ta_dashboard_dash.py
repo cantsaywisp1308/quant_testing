@@ -1,5 +1,6 @@
 import warnings
 import pandas as pd
+import yfinance as yf
 import pandas_datareader.data as web
 import cufflinks as cf
 import cufflinks.colors as _cf_colors
@@ -45,11 +46,25 @@ def build_figure(asset, selected_indicators, start_date, end_date,
                  rsi_periods, rsi_upper, rsi_lower):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+        df = None
+        # Attempt 1: yfinance (preferred because it's usually more robust for all tickers)
         try:
-            df = web.DataReader(asset, 'stooq', start_date, end_date)
-            df.sort_index(inplace=True)
+            temp_df = yf.download(asset, start=start_date, end=end_date, progress=False, auto_adjust=True)
+            if not temp_df.empty:
+                df = temp_df
+                # Flatten MultiIndex columns (newer yfinance versions)
+                if isinstance(df.columns, pd.MultiIndex):
+                    df.columns = df.columns.get_level_values(0)
         except Exception:
-            return {}
+            pass
+
+        # Attempt 2: Fallback to stooq if yfinance fails (happens on Render due to IP blocks)
+        if df is None or df.empty:
+            try:
+                df = web.DataReader(asset, 'stooq', start_date, end_date)
+                df.sort_index(inplace=True)
+            except Exception:
+                return {}
 
     if df is None or df.empty:
         return {}
