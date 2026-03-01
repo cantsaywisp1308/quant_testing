@@ -1,7 +1,6 @@
 dash
 pandas
 yfinance
-cufflinks
-plotly>=4.0,<5.0
+plotly
 gunicorn
 werkzeug
