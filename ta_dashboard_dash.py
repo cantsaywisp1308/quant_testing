@@ -278,5 +278,5 @@ if __name__ == "__main__":
     import threading, webbrowser
     port = int(os.environ.get("PORT", 8050))
     print("\n🚀  TA Dashboard running at: http://127.0.0.1:8050\n")
-    # threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
+    threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:8050")).start()
     app.run(host="0.0.0.0", port=8050)
